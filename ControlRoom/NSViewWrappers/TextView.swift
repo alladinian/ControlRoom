@@ -12,12 +12,19 @@ import SwiftUI
 struct TextView: NSViewRepresentable {
     @Binding var text: String
 
+    var backgroundColor: NSColor = .textBackgroundColor
+    var textColor: NSColor?
+    var font: NSFont = NSFont.monospacedSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
+
     func makeNSView(context: Context) -> NSTextView {
         let view = NSTextView()
-        view.backgroundColor = .textBackgroundColor
+        view.backgroundColor = backgroundColor
+        if let textColor = textColor {
+            view.textColor = textColor
+        }
         view.delegate = context.coordinator
         view.isRichText = false
-        view.font = NSFont.monospacedSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
+        view.font = font
         view.autoresizingMask = [.width, .height]
         view.translatesAutoresizingMaskIntoConstraints = false
 
