@@ -17,7 +17,7 @@ struct AppView: View {
 
     /// The selected application we want to manipulate.
     private var selectedApplication: Application {
-        return applications.first(where: { $0.bundleIdentifier == preferences.lastBundleID })
+        applications.first(where: { $0.bundleIdentifier == preferences.lastBundleID })
             ?? .default
     }
 
@@ -28,7 +28,7 @@ struct AppView: View {
     @State private var shouldShowUninstallConfirmationAlert: Bool = false
 
     private var isApplicationSelected: Bool {
-        !selectedApplication.bundleIdentifier.isEmpty
+        selectedApplication.bundleIdentifier.isNotEmpty
     }
 
     init(simulator: Simulator, applications: [Application]) {

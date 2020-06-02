@@ -18,13 +18,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         mainWindow.showWindow(self)
     }
 
-    func applicationWillTerminate(_ aNotification: Notification) {
-        // Insert code here to tear down your application
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        true
     }
 
     @IBAction func orderFrontStandardAboutPanel(_ sender: Any?) {
         let authors = Bundle.main.authors
-        if authors.isEmpty == false {
+        if authors.isNotEmpty {
             let content = NSViewController()
             content.title = "Control Room"
             let view = NSHostingView(rootView: AboutView(authors: authors))

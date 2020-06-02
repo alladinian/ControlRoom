@@ -9,7 +9,6 @@
 import Foundation
 
 extension SimCtl {
-
     enum Platform {
         case iOS
         case tvOS
@@ -103,7 +102,7 @@ extension SimCtl {
 
         /// The user-visible description of the runtime.
         var description: String {
-            if buildversion.isEmpty == false {
+            if buildversion.isNotEmpty {
                 return "\(name) (\(buildversion))"
             } else {
                 return "\(name)"

@@ -16,12 +16,15 @@ struct MainView: View {
 
     var body: some View {
         Group {
-            if controller.loadingStatus == .loading {
-                LoadingView()
+            if controller.loadingStatus == .failed {
+                LoadingFailedView(title: "Loading failed", text: "This usually happens because the command /usr/bin/xcrun can't be found.")
+            } else if controller.loadingStatus == .invalidCommandLineTool {
+                LoadingFailedView(title: "Loading failed. You need to use Xcode 11.4+ and install the command line tools.",
+                                  text: "If you already have Xcode 11.4+ installed, go to Xcode's Preferences, choose the Locations tab, then make sure Xcode is selected for Command Line Tools.")
             } else if controller.loadingStatus == .success {
-                SplitLayoutView(controller: controller)
+                SplitLayoutView(controller: self.controller)
             } else {
-                LoadingFailedView()
+                LoadingView()
             }
         }
         .frame(minWidth: 500, maxWidth: .infinity, minHeight: 500, maxHeight: .infinity)
