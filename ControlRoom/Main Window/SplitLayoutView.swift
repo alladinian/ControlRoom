@@ -13,19 +13,19 @@ struct SplitLayoutView: View {
     @ObservedObject var controller: SimulatorsController
 
     var body: some View {
-        HSplitView {
+        NavigationView {
             SidebarView(controller: controller)
-                .frame(minWidth: 200)
+                .frame(minWidth: 220)
                 .layoutPriority(1)
 
             // Use a GeometryReader here to take up as much space as possible
             // otherwise the view would collapse down to (potentially)
             // the size of the Text.
             GeometryReader { _ in
-                if self.controller.selectedSimulatorIDs.count == 1 {
-                    ControlView(controller: self.controller,
-                                simulator: self.controller.selectedSimulators[0],
-                                applications: self.controller.applications)
+                if controller.selectedSimulatorIDs.count == 1 {
+                    ControlView(controller: controller,
+                                simulator: controller.selectedSimulators[0],
+                                applications: controller.applications)
                         .padding()
                 } else {
                     Text("Select a simulator from the list.")

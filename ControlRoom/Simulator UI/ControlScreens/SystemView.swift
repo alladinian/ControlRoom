@@ -11,7 +11,8 @@ import SwiftUI
 
 /// Controls system-wide settings such as time and appearance.
 struct SystemView: View {
-    var simulator: Simulator
+    @EnvironmentObject var preferences: Preferences
+    let simulator: Simulator
 
     /// The current time to show in the device.
     @State private var time = Date()
@@ -19,14 +20,16 @@ struct SystemView: View {
     /// The system-wide appearance; "Light" or "Dark".
     @State private var appearance: SimCtl.UI.Appearance = .light
 
+    /// The currently active language identifier
     @State private var language: String = NSLocale.current.languageCode ?? ""
 
+    /// The currently active locale identifier
     @State private var locale: String = NSLocale.current.identifier
 
     private let languages: [String] = {
         NSLocale.isoLanguageCodes
             .filter { NSLocale.current.localizedString(forLanguageCode: $0) != nil }
-            .sorted { (lhs, rhs) -> Bool in
+            .sorted { lhs, rhs in
                 let lhsString = NSLocale.current.localizedString(forLanguageCode: lhs) ?? ""
                 let rhsString = NSLocale.current.localizedString(forLanguageCode: rhs) ?? ""
                 return lhsString.lowercased() < rhsString.lowercased()
@@ -39,6 +42,7 @@ struct SystemView: View {
                 HStack {
                     DatePicker("Time:", selection: $time)
                     Button("Set", action: setTime)
+                    Button("Set to 9:41", action: setAppleTime)
                 }
 
                 FormSpacer()
@@ -90,12 +94,24 @@ struct SystemView: View {
                     }
                 }
 
+                FormSpacer()
+            }
+
+            Group {
+                Section(header: Text("Open URL")) {
+                    HStack {
+                        TextField("URL / deep link to open", text: $preferences.lastOpenURL)
+                        Button("Open URL", action: openURL)
+                    }
+                }
+
             }
 
             Spacer()
 
             HStack {
                 Spacer()
+                Button("Reset Keychain", action: resetKeychain)
                 Button("Erase Content and Settings", action: eraseDevice)
             }
         }
@@ -108,6 +124,19 @@ struct SystemView: View {
     /// Changes the system clock to a new value.
     func setTime() {
         SimCtl.overrideStatusBarTime(simulator.udid, time: time)
+    }
+
+    func setAppleTime() {
+        let calendar = Calendar.current
+        var components = calendar.dateComponents([.year, .month, .day], from: Date())
+        components.hour = 9
+        components.minute = 41
+        components.second = 0
+
+        let appleTime = calendar.date(from: components) ?? Date()
+        SimCtl.overrideStatusBarTime(simulator.udid, time: appleTime)
+
+        time = appleTime
     }
 
     /// Moves between light and dark mode.
@@ -137,9 +166,19 @@ struct SystemView: View {
         SimCtl.copyPasteboardToSimulator(simulator.udid)
     }
 
+    /// Opens a URL in the appropriate device app.
+    func openURL() {
+        SimCtl.openURL(simulator.udid, URL: preferences.lastOpenURL)
+    }
+
     /// Erases the current device.
     func eraseDevice() {
         SimCtl.erase(simulator.udid)
+    }
+
+    /// Resets the keychain on the current device
+    func resetKeychain() {
+        SimCtl.execute(.keychain(deviceId: simulator.udid, action: .reset))
     }
 
     private func locales(for language: String) -> [String] {
@@ -161,6 +200,6 @@ struct SystemView_Previews: PreviewProvider {
 
 extension SimCtl.UI.Appearance {
     var displayName: String {
-        self.rawValue.capitalized
+        rawValue.capitalized
     }
 }

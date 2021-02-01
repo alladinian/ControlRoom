@@ -23,7 +23,7 @@ struct AboutView: View {
 
     var copyright: String {
         let copyright = Bundle.main.object(forInfoDictionaryKey: "NSHumanReadableCopyright") as? String
-        return copyright ?? "Copyright © 2020 Paul Hudson. All rights reserved."
+        return copyright ?? "Copyright © 2021 Paul Hudson. All rights reserved."
     }
 
     let authors: [Author]
@@ -48,7 +48,7 @@ struct AboutView: View {
                 // contributors
                 CollectionView(authors, horizontalSpacing: 0, horizontalAlignment: .center, verticalSpacing: 0) { author in
                     Button("@\(author.login)") {
-                        self.revealAuthor(author)
+                        revealAuthor(author)
                     }
                     .buttonStyle(RecessedButtonStyle())
                 }

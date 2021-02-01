@@ -114,7 +114,7 @@ extension SimCtl {
 
         /// Spawn a process by executing a given executable on a device.
         static func spawn(deviceId: String, pathToExecutable: String, options: [Spawn.Option] = []) -> Command {
-            Command("spawn", arguments: options.flatMap { $0.arguments } + [deviceId, pathToExecutable])
+            Command("spawn", arguments: options.flatMap(\.arguments) + [deviceId, pathToExecutable])
         }
 
         /// List available devices, device types, runtimes, or device pairs.
@@ -129,12 +129,12 @@ extension SimCtl {
                 arguments.append(contentsOf: search.arguments)
             }
 
-            return Command("list", arguments: arguments + flags.flatMap { $0.arguments })
+            return Command("list", arguments: arguments + flags.flatMap(\.arguments))
         }
 
         /// Show the installed applications.
         static func listApps(deviceId: String, flags: [List.Flag] = []) -> Command {
-            Command("listapps", arguments: [deviceId] + flags.flatMap { $0.arguments })
+            Command("listapps", arguments: [deviceId] + flags.flatMap(\.arguments))
         }
 
         /// Trigger iCloud sync on a device.
@@ -144,17 +144,17 @@ extension SimCtl {
 
         /// Sync the pasteboard content from one pasteboard to another.
         static func pbsync(source: Pasteboard.Device, destination: Pasteboard.Device, flags: [Pasteboard.Flag] = []) -> Command {
-            Command("pbsync", arguments: source.arguments + destination.arguments + flags.flatMap { $0.arguments })
+            Command("pbsync", arguments: source.arguments + destination.arguments + flags.flatMap(\.arguments))
         }
 
         /// Copy standard input onto the device pasteboard.
         static func pbcopy(device: Pasteboard.Device, flags: [Pasteboard.Flag] = []) -> Command {
-            Command("pbcopy", arguments: device.arguments + flags.flatMap { $0.arguments })
+            Command("pbcopy", arguments: device.arguments + flags.flatMap(\.arguments))
         }
 
         /// Print the contents of the device's pasteboard to standard output.
         static func pbpaste(device: Pasteboard.Device, flags: [Pasteboard.Flag] = []) -> Command {
-            Command("pbpaste", arguments: device.arguments + flags.flatMap { $0.arguments })
+            Command("pbpaste", arguments: device.arguments + flags.flatMap(\.arguments))
         }
 
         /// Set up a device IO operation.
@@ -164,7 +164,7 @@ extension SimCtl {
 
         /// Collect diagnostic information and logs.
         static func diagnose(flags: [Diagnose.Flag]) -> Command {
-            Command("diagnose", arguments: flags.flatMap { $0.arguments })
+            Command("diagnose", arguments: flags.flatMap(\.arguments))
         }
 
         /// enable or disable verbose logging for a device
@@ -335,7 +335,7 @@ extension SimCtl {
             case pairs
 
             var arguments: [String] {
-                return [rawValue]
+                [rawValue]
             }
         }
 
@@ -358,7 +358,7 @@ extension SimCtl {
             case verbose = "-v"
 
             var arguments: [String] {
-                [self.rawValue]
+                [rawValue]
             }
         }
     }
@@ -383,7 +383,7 @@ extension SimCtl {
             case promise = "-p"
 
             var arguments: [String] {
-                [self.rawValue]
+                [rawValue]
             }
         }
     }
@@ -446,7 +446,7 @@ extension SimCtl {
                     return ["poll"]
                 case .recordVideo(let codec, let display, let mask, let force, let url):
                     var arguments = [String]()
-                    
+
                     if let codec = codec {
                         arguments.append(contentsOf: codec.arguments)
                     }
@@ -485,7 +485,7 @@ extension SimCtl {
             case hevc
 
             var arguments: [String] {
-                ["--codec=\(self.rawValue)"]
+                ["--codec=\(rawValue)"]
             }
 
             static let all = [Self.h264, .hevc]
@@ -496,7 +496,7 @@ extension SimCtl {
             case external
 
             var arguments: [String] {
-                ["--display=\(self.rawValue)"]
+                ["--display=\(rawValue)"]
             }
 
             static let all: [Self?] = [Self.internal, .external, nil]
@@ -508,7 +508,7 @@ extension SimCtl {
             case black
 
             var arguments: [String] {
-                ["--mask=\(self.rawValue)"]
+                ["--mask=\(rawValue)"]
             }
 
             static let all: [Self?] = [Self.ignored, .alpha, .black, nil]
@@ -516,12 +516,12 @@ extension SimCtl {
 
         enum ImageFormat: String, CaseIterable {
             case png
+            case jpeg
             case tiff
             case bmp
-            case jpeg
 
             var arguments: [String] {
-                ["--type=\(self.rawValue)"]
+                ["--type=\(rawValue)"]
             }
         }
     }
@@ -570,7 +570,7 @@ extension SimCtl {
                 case .clear:
                     return ["clear"]
                 case .override(let overrides):
-                    return ["override"] + overrides.flatMap { $0.arguments }
+                    return ["override"] + overrides.flatMap(\.arguments)
                 }
             }
 
@@ -697,7 +697,7 @@ extension SimCtl {
             case reset
 
             var arguments: [String] {
-                [self.rawValue]
+                [rawValue]
             }
         }
 
@@ -717,7 +717,7 @@ extension SimCtl {
             case siri
 
             var arguments: [String] {
-                [self.rawValue]
+                [rawValue]
             }
         }
     }

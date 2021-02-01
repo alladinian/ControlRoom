@@ -13,13 +13,13 @@ import Foundation
 enum SimCtl: CommandLineCommandExecuter {
     typealias Error = CommandLineError
 
-    static var launchPath = "/usr/bin/xcrun"
+    static let launchPath = "/usr/bin/xcrun"
 
     static func watchDeviceList() -> AnyPublisher<DeviceList, SimCtl.Error> {
         if CoreSimulator.canRegisterForSimulatorNotifications {
             return CoreSimulatorPublisher()
-                .mapError({ _ in return SimCtl.Error.missingCommand })
-                .flatMap({ _ in return SimCtl.listDevices() })
+                .mapError { _ in return SimCtl.Error.missingCommand }
+                .flatMap { _ in return SimCtl.listDevices() }
                 .prepend(SimCtl.listDevices())
                 .removeDuplicates()
                 .eraseToAnyPublisher()
@@ -27,7 +27,7 @@ enum SimCtl: CommandLineCommandExecuter {
             return Timer.publish(every: 5, on: .main, in: .common)
                 .autoconnect()
                 .setFailureType(to: SimCtl.Error.self)
-                .flatMap({ _ in return SimCtl.listDevices() })
+                .flatMap { _ in return SimCtl.listDevices() }
                 .prepend(SimCtl.listDevices())
                 .removeDuplicates()
                 .eraseToAnyPublisher()
@@ -85,13 +85,15 @@ enum SimCtl: CommandLineCommandExecuter {
     }
 
     // swiftlint:disable:next function_parameter_count
-    static func overrideStatusBarNetwork(_ simulator: String,
-                                         network: StatusBar.DataNetwork,
-                                         wifiMode: StatusBar.WifiMode,
-                                         wifiBars: StatusBar.WifiBars,
-                                         cellMode: StatusBar.CellularMode,
-                                         cellBars: StatusBar.CellularBars,
-                                         carrier: String) {
+    static func overrideStatusBarNetwork(
+        _ simulator: String,
+        network: StatusBar.DataNetwork,
+        wifiMode: StatusBar.WifiMode,
+        wifiBars: StatusBar.WifiBars,
+        cellMode: StatusBar.CellularMode,
+        cellBars: StatusBar.CellularBars,
+        carrier: String
+    ) {
         execute(.statusBar(deviceId: simulator, operation: .override([
             .dataNetwork(network),
             .wifiMode(wifiMode),
@@ -127,12 +129,34 @@ enum SimCtl: CommandLineCommandExecuter {
         execute(.io(deviceId: simulator, operation: .screenshot(type: type, display: display, mask: mask, url: file)))
     }
 
+    static func startVideo(_ simulator: String, to file: String, type: IO.Codec? = nil, display: IO.Display? = nil, with mask: IO.Mask? = nil) -> Process {
+        executeAsync(.io(deviceId: simulator, operation: .recordVideo(codec: type, display: display, mask: mask, force: true, url: file)))
+    }
+
     static func delete(_ simulators: Set<String>) {
         execute(.delete(.devices(Array(simulators))))
     }
 
     static func uninstall(_ simulator: String, appID: String) {
         execute(.uninstall(deviceId: simulator, appBundleId: appID))
+    }
+
+    static func launch(_ simulator: String, appID: String) {
+        execute(.launch(deviceId: simulator, appBundleId: appID))
+    }
+
+    static func terminate(_ simulator: String, appID: String) {
+        execute(.terminate(deviceId: simulator, appBundleId: appID))
+    }
+
+    static func restart(_ simulator: String, appID: String) {
+        terminate(simulator, appID: appID)
+
+        // Wait a fraction of a section to ensure the system has terminated
+        // the app before we relaunch it.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            launch(simulator, appID: appID)
+        }
     }
 
     static func sendPushNotification(_ simulator: String, appID: String, jsonPayload: String) {
@@ -168,6 +192,7 @@ enum SimCtl: CommandLineCommandExecuter {
     static func getAppContainer(_ simulator: String, appID: String, completion: @escaping (URL?) -> Void) {
         execute(.getAppContainer(deviceId: simulator, appBundleID: appID)) { result in
             let url: URL?
+
             switch result {
             case .success(let data):
                 if let path = String(data: data, encoding: .utf8) {
@@ -179,6 +204,7 @@ enum SimCtl: CommandLineCommandExecuter {
             case .failure:
                 url = nil
             }
+
             DispatchQueue.main.async {
                 completion(url)
             }

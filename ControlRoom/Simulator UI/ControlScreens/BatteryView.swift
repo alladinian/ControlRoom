@@ -17,7 +17,7 @@ struct BatteryView: View {
     /// Note: "Charged" looks the same as "Discharging", so it's not included in this screen.
     @State private var batteryState: SimCtl.StatusBar.BatteryState = .charging
 
-    var simulator: Simulator
+    let simulator: Simulator
 
     var body: some View {
         Form {
@@ -28,8 +28,11 @@ struct BatteryView: View {
             }
             .pickerStyle(RadioGroupPickerStyle())
 
-            Slider(value: $batteryLevel, in: 0...100, onEditingChanged: levelChanged, minimumValueLabel: Text("0%"), maximumValueLabel: Text("100%")) {
-                Text("Level:")
+            VStack {
+                Text("Current battery percentage: \(Int(round(batteryLevel)))%")
+                Slider(value: $batteryLevel, in: 0...100, onEditingChanged: levelChanged, minimumValueLabel: Text("0%"), maximumValueLabel: Text("100%")) {
+                    Text("Level:")
+                }
             }
 
             Spacer()
@@ -48,7 +51,7 @@ struct BatteryView: View {
     /// Triggered when the user adjusts the battery level.
     func levelChanged(_ isEditing: Bool) {
         if isEditing == false {
-            self.updateBattery()
+            updateBattery()
         }
     }
 }
@@ -61,6 +64,6 @@ struct BatteryView_Previews: PreviewProvider {
 
 extension SimCtl.StatusBar.BatteryState {
     var displayName: String {
-        self.rawValue.capitalized
+        rawValue.capitalized
     }
 }

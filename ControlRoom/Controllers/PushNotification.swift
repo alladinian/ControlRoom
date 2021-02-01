@@ -70,17 +70,20 @@ struct PushNotificationAPS: Codable {
     var json: String {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
+
         guard
             let data = try? encoder.encode(self),
             let output = String(data: data, encoding: .utf8)
             else {
                 return ""
             }
+
         return output
     }
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+
         if !isContentAvailable {
             try container.encode(alert, forKey: .alert)
             try container.encode(sound, forKey: .sound)
@@ -91,11 +94,14 @@ struct PushNotificationAPS: Codable {
         } else {
             try container.encode(1, forKey: .isContentAvailable)
         }
+
         try container.encodeIfNotEmpty(threadID, forKey: .threadID)
         try container.encodeIfNotEmpty(category, forKey: .category)
+
         if isMutableContent {
             try container.encode(1, forKey: .isMutableContent)
         }
+
         try container.encodeIfNotEmpty(targetContentID, forKey: .targetContentID)
     }
 
@@ -104,13 +110,16 @@ struct PushNotificationAPS: Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         isContentAvailable = (try container.decodeIfPresent(Int.self, forKey: .isContentAvailable) == 1 ? true : false)
+
         if !isContentAvailable {
             alert = try container.decodeIfPresent(Alert.self, forKey: .alert) ?? Alert()
             sound = try container.decodeIfPresent(Sound.self, forKey: .sound) ?? Sound()
+
             if let badgeValue = try container.decodeIfPresent(Int.self, forKey: .badge) {
                 badge = String(badgeValue)
             }
         }
+
         threadID = try container.decodeIfPresent(String.self, forKey: .threadID) ?? ""
         category = try container.decodeIfPresent(String.self, forKey: .category) ?? ""
         isMutableContent = (try container.decodeIfPresent(Int.self, forKey: .isMutableContent) == 1 ? true : false)
@@ -214,6 +223,7 @@ extension PushNotificationAPS {
                 try container.encodeIfNotEmpty(subtitle, forKey: .subtitle)
                 try container.encodeIfNotEmpty(body, forKey: .body)
             }
+
             try container.encodeIfNotEmpty(launchImage, forKey: .launchImage)
         }
 
@@ -237,7 +247,6 @@ extension PushNotificationAPS {
 
 extension PushNotificationAPS {
     struct Sound: Codable {
-
         private enum CodingKeys: String, CodingKey {
             case isCritical = "critical"
             case name
@@ -275,6 +284,7 @@ extension PushNotificationAPS {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             isCritical = (try container.decodeIfPresent(Int.self, forKey: .isCritical)) == 1 ? true : false
             name = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
+
             if isCritical {
                 volume = Double(try container.decodeIfPresent(String.self, forKey: .volume) ?? "") ?? 0
             }

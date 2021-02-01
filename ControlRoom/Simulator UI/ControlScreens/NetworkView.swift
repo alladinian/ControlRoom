@@ -11,7 +11,7 @@ import SwiftUI
 /// Controls WiFi and cellular data state for the whole device.
 struct NetworkView: View {
     @EnvironmentObject var preferences: Preferences
-    var simulator: Simulator
+    let simulator: Simulator
 
     /// The active data network; can be one of "WiFi", "3G", "4G", "LTE", "LTE-A", or "LTE+".
     @State private var dataNetwork: SimCtl.StatusBar.DataNetwork = .wifi
@@ -31,9 +31,7 @@ struct NetworkView: View {
     var body: some View {
         Form {
             Section {
-                TextField("Operator", text: $preferences.carrierName) {
-                    self.updateData()
-                }
+                TextField("Operator", text: $preferences.carrierName, onCommit: updateData)
 
                 Picker("Network type:", selection: $dataNetwork.onChange(updateData)) {
                     ForEach(SimCtl.StatusBar.DataNetwork.allCases, id: \.self) { network in
@@ -55,7 +53,7 @@ struct NetworkView: View {
 
                 Picker("WiFi bars:", selection: $wiFiBar.onChange(updateData)) {
                     ForEach(SimCtl.StatusBar.WifiBars.allCases, id: \.self) { bars in
-                        Image(nsImage: self.nsimage(named: "wifi.\(bars.rawValue)", size: NSSize(width: 19, height: 13.8)))
+                        Image(nsImage: nsImage(named: "wifi.\(bars.rawValue)", size: NSSize(width: 19, height: 13.8)))
                             .tag(bars.rawValue)
                     }
                 }
@@ -74,7 +72,7 @@ struct NetworkView: View {
 
                 Picker("Cellular bars:", selection: $cellularBar.onChange(updateData)) {
                     ForEach(SimCtl.StatusBar.CellularBars.allCases, id: \.self) { bars in
-                        Image(nsImage: self.nsimage(named: "cell.\(bars.rawValue)", size: NSSize(width: 21, height: 11.4)))
+                        Image(nsImage: nsImage(named: "cell.\(bars.rawValue)", size: NSSize(width: 21, height: 11.4)))
                             .tag(bars.rawValue)
                     }
                 }
@@ -98,10 +96,11 @@ struct NetworkView: View {
     }
 
     /// Workaround for getting configurable image sizes in Segmented Control; It seems to be broken in SwiftUI right now.
-    private func nsimage(named name: String, size: NSSize) -> NSImage {
+    private func nsImage(named name: String, size: NSSize) -> NSImage {
         guard let image = NSImage(named: name) else {
             return NSImage()
         }
+
         image.size = size
         return image
     }
@@ -119,14 +118,14 @@ extension SimCtl.StatusBar.DataNetwork {
         case .wifi:
             return "WiFi"
         default:
-            return self.rawValue.uppercased()
+            return rawValue.uppercased()
         }
     }
 }
 
 extension SimCtl.StatusBar.WifiMode {
     var displayName: String {
-        self.rawValue.capitalized
+        rawValue.capitalized
     }
 }
 
@@ -136,7 +135,7 @@ extension SimCtl.StatusBar.CellularMode {
         case .notSupported:
             return "Not Supported"
         default:
-            return self.rawValue.capitalized
+            return rawValue.capitalized
         }
     }
 }

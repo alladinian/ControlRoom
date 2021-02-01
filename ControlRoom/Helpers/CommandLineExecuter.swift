@@ -61,8 +61,21 @@ extension CommandLineCommandExecuter {
         }
     }
 
+    static func executeAsync(_ command: Command) -> Process {
+        let task = Process()
+        task.launchPath = launchPath
+        task.arguments = command.arguments
+
+        let pipe = Pipe()
+        task.standardOutput = pipe
+
+        try? task.run()
+        return task
+    }
+
     static func execute(_ arguments: [String]) -> PassthroughSubject<Data, CommandLineError> {
         let publisher = PassthroughSubject<Data, CommandLineError>()
+
         execute(arguments) { result in
             switch result {
             case .success(let data):
@@ -72,6 +85,7 @@ extension CommandLineCommandExecuter {
                 publisher.send(completion: .failure(error))
             }
         }
+
         return publisher
     }
 
@@ -94,7 +108,7 @@ extension CommandLineCommandExecuter {
     private static func executeAndDecode<Item, Decoder>(_ arguments: [String], decoder: Decoder) -> AnyPublisher<Item, CommandLineError> where Item: Decodable, Decoder: TopLevelDecoder, Decoder.Input == Data {
         execute(arguments)
             .decode(type: Item.self, decoder: decoder)
-            .mapError({ error -> CommandLineError in
+            .mapError { error -> CommandLineError in
                 if error is DecodingError {
                     return .missingOutput
                 } else if let command = error as? CommandLineError {
@@ -102,7 +116,7 @@ extension CommandLineCommandExecuter {
                 } else {
                     return .unknown(error)
                 }
-            })
+            }
             .eraseToAnyPublisher()
     }
 }
